@@ -13,9 +13,6 @@ pub mod todo {
 
 #[derive(Accounts)]
 pub struct CreateTodoBoard<'info> {
-    // TODO figure out how to get the constraint on the mint of the vault
-    // workaround would be to pass in mint and add contraint to
-    // the vault_account.mint == mint
     #[account(init, associated = authority, with = todo_board_type)]
     pub todo_board: ProgramAccount<'info, TodoBoard>,
     pub todo_board_type: AccountInfo<'info>,

@@ -9,7 +9,8 @@ describe('todoBoard', () => {
     it('should create todo board', async () => {
         const todoBoardAuthority = anchor.web3.Keypair.generate()
         // airdrop to the authority
-        let todoBoardTypeKey = anchor.web3.Keypair.generate().publicKey
+        let todoBoardType = anchor.web3.Keypair.generate()
+        let todoBoardTypeKey = todoBoardType.publicKey
 
         await provider.connection.confirmTransaction(
             await provider.connection.requestAirdrop(
@@ -32,7 +33,7 @@ describe('todoBoard', () => {
                 rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                 systemProgram: anchor.web3.SystemProgram.programId
             },
-            signers: [todoBoardAuthority]
+            signers: [todoBoardType, todoBoardAuthority]
         })
 
         const account = await program.account.todoBoard.associated(
