@@ -11,6 +11,7 @@ describe('todoBoard', () => {
         // airdrop to the authority
         let todoBoardType = anchor.web3.Keypair.generate()
         let todoBoardTypeKey = todoBoardType.publicKey
+        let holder = anchor.web3.Keypair.generate()
 
         await provider.connection.confirmTransaction(
             await provider.connection.requestAirdrop(
@@ -25,15 +26,19 @@ describe('todoBoard', () => {
             todoBoardTypeKey
         )
 
-        await program.rpc.createTodoBoard('Board name1', {
+        await program.rpc.createTodoBoard(new anchor.BN(50), {
             accounts: {
+                holder: holder.publicKey,
                 todoBoard: todoBoardKey,
                 todoBoardType: todoBoardTypeKey,
                 authority: todoBoardAuthority.publicKey,
                 rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                 systemProgram: anchor.web3.SystemProgram.programId
             },
-            signers: [todoBoardType, todoBoardAuthority]
+            signers: [holder, todoBoardAuthority],
+            instructions: [
+                await program.account.holder.createInstruction(holder)
+            ]
         })
 
         const account = await program.account.todoBoard.associated(
