@@ -3,24 +3,30 @@ use anchor_lang::prelude::*;
 #[program]
 pub mod todo {
     use super::*;
-    pub fn create_todo(ctx: Context<CreateTodoContext>, todo: Option<String>) -> ProgramResult {
-        let todo_account = &mut ctx.accounts.todo_account;
-        todo_account.todo = todo;
-        todo_account.authority = *ctx.accounts.authority.to_account_info().key;
+    pub fn create_todo_board(ctx: Context<CreateTodoBoard>) -> ProgramResult {
+        let portfolio = &mut ctx.accounts.portfolio;
+        portfolio.authority = *ctx.accounts.authority.key;
         Ok(())
     }
 }
 
 #[derive(Accounts)]
-pub struct CreateTodoContext<'info> {
-    #[account(init)]
-    pub todo_account: ProgramAccount<'info, TodoAccount>,
-    #[account(signer)]
-    pub authority: AccountInfo<'info>,
+pub struct CreateTodoBoard<'info> {
+    // TODO figure out how to get the constraint on the mint of the vault
+    // workaround would be to pass in mint and add contraint to
+    // the vault_account.mint == mint
+    #[account(init, associated = authority, with = vault_account)]
+    pub portfolio: ProgramAccount<'info, Portfolio>,
+    pub vault_account: AccountInfo<'info>,
+    #[account(mut, signer)]
+    authority: AccountInfo<'info>,
+    rent: Sysvar<'info, Rent>,
+    system_program: AccountInfo<'info>,
 }
 
-#[account]
-pub struct TodoAccount {
-    pub todo: Option<String>,
-    pub authority: Pubkey,
+#[associated]
+#[derive(Default)]
+pub struct Portfolio {
+    /// The users owner address that must sign all transactions for the account
+    authority: Pubkey,
 }

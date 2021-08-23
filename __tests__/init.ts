@@ -1,40 +1,46 @@
 import * as anchor from '@project-serum/anchor'
 
-describe('init', () => {
-    // Configure the client to use the local cluster.
+describe('todoBoard', () => {
     const provider = anchor.Provider.env()
+    // Configure the client to use the local cluster.
     anchor.setProvider(provider)
     const program = anchor.workspace.Todo
 
-    // Add your test here.
-    // The Account to create.
-    const todoAccount = anchor.web3.Keypair.generate()
-    const user = anchor.web3.Keypair.generate()
+    it('should create todo board', async () => {
+        // owner of the portfolio that will be created
+        const todoBoardAuthority = anchor.web3.Keypair.generate()
+        // airdrop to the authority
+        let vaultAPublicKey = anchor.web3.Keypair.generate().publicKey
 
-    it('Is initialized!', async () => {
-        // Atomically create the new account and initialize it with the program.
-        const value = 'something'
-        await program.rpc.createTodo(value, {
-            accounts: {
-                todoAccount: todoAccount.publicKey,
-                authority: user.publicKey,
-                rent: anchor.web3.SYSVAR_RENT_PUBKEY
-            },
-            signers: [todoAccount, user],
-            instructions: [
-                await program.account.todoAccount.createInstruction(
-                    todoAccount,
-                    300
-                )
-            ]
-        })
-
-        const todoFetched = await program.account.todoAccount.fetch(
-            todoAccount.publicKey
+        await provider.connection.confirmTransaction(
+            await provider.connection.requestAirdrop(
+                todoBoardAuthority.publicKey,
+                10000000000
+            ),
+            'confirmed'
+        )
+        // generate the associated key
+        const portfolioKey = await program.account.portfolio.associatedAddress(
+            todoBoardAuthority.publicKey,
+            vaultAPublicKey
         )
 
-        console.log(todoFetched)
-        // Check it's state was initialized.
-        expect(todoFetched.todo.toString()).toBe(value.toString())
+        await program.rpc.createTodoBoard({
+            accounts: {
+                portfolio: portfolioKey,
+                vaultAccount: vaultAPublicKey,
+                authority: todoBoardAuthority.publicKey,
+                rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+                systemProgram: anchor.web3.SystemProgram.programId
+            },
+            signers: [todoBoardAuthority]
+        })
+
+        const account = await program.account.portfolio.associated(
+            todoBoardAuthority.publicKey,
+            vaultAPublicKey
+        )
+
+        console.log(account)
     })
 })
