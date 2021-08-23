@@ -1,4 +1,5 @@
 import * as anchor from '@project-serum/anchor'
+import assert from 'assert'
 
 describe('todoBoard', () => {
     const provider = anchor.Provider.env()
@@ -18,7 +19,7 @@ describe('todoBoard', () => {
             'confirmed'
         )
 
-        const boardName = 'Board name'
+        const boardName: string = 'Board name'
         await program.rpc.createTodoBoard(boardName, {
             accounts: {
                 todoBoard: todoBoardAccount.publicKey,
@@ -39,15 +40,10 @@ describe('todoBoard', () => {
             todoBoardAccount.publicKey
         )
 
-        console.log(todoBoardFetched)
-        // Check it's state was initialized.
-
         const todoKey = await program.account.todo.associatedAddress(
             user.publicKey,
             todoBoardAccount.publicKey
         )
-
-        console.log(todoKey, todoBoardAccount.publicKey, user.publicKey)
 
         const todoName = 'Todo name'
         await program.rpc.createTodo(todoName, {
@@ -61,6 +57,16 @@ describe('todoBoard', () => {
             signers: [user]
         })
 
-        expect(todoBoardFetched.name).toBe(boardName.toString())
+        const todo = await program.account.todo.associated(
+            user.publicKey,
+            todoBoardAccount.publicKey
+        )
+
+        const parsedTodoName = new TextDecoder('utf-8')
+            .decode(new Uint8Array(todo.name).filter(element => element))
+            .trim()
+
+        expect(todoBoardFetched.name).toBe(boardName)
+        expect(parsedTodoName).toBe(todoName)
     })
 })

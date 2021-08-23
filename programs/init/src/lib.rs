@@ -18,9 +18,12 @@ pub mod todo {
         let todo = &mut ctx.accounts.todo;
         let todo_board = &mut ctx.accounts.todo_board;
 
-        let given_todo_name = todo_name.as_bytes();
-        let mut parsed_todo_name = [0u8; 280];
-        parsed_todo_name[..given_todo_name.len()].copy_from_slice(given_todo_name);
+        let given_todo_name = todo_name.unwrap();
+        let given_todo_name_bytes = given_todo_name.as_bytes();
+
+        let mut parsed_todo_name = [0u8; 30];
+
+        parsed_todo_name[..given_todo_name_bytes.len()].copy_from_slice(given_todo_name_bytes);
 
         todo.authority = todo_board.authority;
         todo.name = parsed_todo_name;
@@ -58,6 +61,6 @@ pub struct CreateTodo<'info> {
 #[associated]
 #[derive(Default)]
 pub struct Todo {
-    name: [u8; 280],
+    name: [u8; 30],
     authority: Pubkey,
 }
