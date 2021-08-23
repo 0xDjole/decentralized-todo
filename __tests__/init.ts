@@ -7,10 +7,9 @@ describe('todoBoard', () => {
     const program = anchor.workspace.Todo
 
     it('should create todo board', async () => {
-        // owner of the portfolio that will be created
         const todoBoardAuthority = anchor.web3.Keypair.generate()
         // airdrop to the authority
-        let vaultAPublicKey = anchor.web3.Keypair.generate().publicKey
+        let todoBoardTypeKey = anchor.web3.Keypair.generate().publicKey
 
         await provider.connection.confirmTransaction(
             await provider.connection.requestAirdrop(
@@ -20,15 +19,15 @@ describe('todoBoard', () => {
             'confirmed'
         )
         // generate the associated key
-        const portfolioKey = await program.account.portfolio.associatedAddress(
+        const todoBoardKey = await program.account.todoBoard.associatedAddress(
             todoBoardAuthority.publicKey,
-            vaultAPublicKey
+            todoBoardTypeKey
         )
 
         await program.rpc.createTodoBoard({
             accounts: {
-                portfolio: portfolioKey,
-                vaultAccount: vaultAPublicKey,
+                todoBoard: todoBoardKey,
+                todoBoardType: todoBoardTypeKey,
                 authority: todoBoardAuthority.publicKey,
                 rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                 systemProgram: anchor.web3.SystemProgram.programId
@@ -36,9 +35,9 @@ describe('todoBoard', () => {
             signers: [todoBoardAuthority]
         })
 
-        const account = await program.account.portfolio.associated(
+        const account = await program.account.todoBoard.associated(
             todoBoardAuthority.publicKey,
-            vaultAPublicKey
+            todoBoardTypeKey
         )
 
         console.log(account)
