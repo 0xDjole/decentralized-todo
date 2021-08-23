@@ -24,7 +24,7 @@ describe('todoBoard', () => {
             todoBoardTypeKey
         )
 
-        await program.rpc.createTodoBoard({
+        await program.rpc.createTodoBoard('Board name1', {
             accounts: {
                 todoBoard: todoBoardKey,
                 todoBoardType: todoBoardTypeKey,

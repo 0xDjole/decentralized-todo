@@ -3,9 +3,10 @@ use anchor_lang::prelude::*;
 #[program]
 pub mod todo {
     use super::*;
-    pub fn create_todo_board(ctx: Context<CreateTodoBoard>) -> ProgramResult {
+    pub fn create_todo_board(ctx: Context<CreateTodoBoard>, board_name: String) -> ProgramResult {
         let todo_board = &mut ctx.accounts.todo_board;
         todo_board.authority = *ctx.accounts.authority.key;
+        todo_board.name = board_name;
         Ok(())
     }
 }
@@ -27,6 +28,6 @@ pub struct CreateTodoBoard<'info> {
 #[associated]
 #[derive(Default)]
 pub struct TodoBoard {
-    /// The users owner address that must sign all transactions for the account
+    name: String,
     authority: Pubkey,
 }
