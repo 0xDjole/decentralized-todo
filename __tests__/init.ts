@@ -9,9 +9,9 @@ describe('todoBoard', () => {
     it('should create todo board', async () => {
         const user = anchor.web3.Keypair.generate()
         const todoBoardAccount = anchor.web3.Keypair.generate()
-        // airdrop to the authority
 
-        await program.rpc.createTodoBoard('Board name', {
+        const boardName = 'Board name'
+        await program.rpc.createTodoBoard(boardName, {
             accounts: {
                 todoBoard: todoBoardAccount.publicKey,
                 authority: user.publicKey,
@@ -26,5 +26,13 @@ describe('todoBoard', () => {
                 )
             ]
         })
+
+        const todoBoardFetched = await program.account.todoBoard.fetch(
+            todoBoardAccount.publicKey
+        )
+
+        console.log(todoBoardFetched)
+        // Check it's state was initialized.
+        expect(todoBoardFetched.name).toBe(boardName.toString())
     })
 })
