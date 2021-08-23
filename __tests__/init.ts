@@ -7,45 +7,24 @@ describe('todoBoard', () => {
     const program = anchor.workspace.Todo
 
     it('should create todo board', async () => {
-        const todoBoardAuthority = anchor.web3.Keypair.generate()
+        const user = anchor.web3.Keypair.generate()
+        const todoBoardAccount = anchor.web3.Keypair.generate()
         // airdrop to the authority
-        let todoBoardType = anchor.web3.Keypair.generate()
-        let todoBoardTypeKey = todoBoardType.publicKey
-        let holder = anchor.web3.Keypair.generate()
-
-        await provider.connection.confirmTransaction(
-            await provider.connection.requestAirdrop(
-                todoBoardAuthority.publicKey,
-                10000000000
-            ),
-            'confirmed'
-        )
-        // generate the associated key
-        const todoBoardKey = await program.account.todoBoard.associatedAddress(
-            todoBoardAuthority.publicKey,
-            todoBoardTypeKey
-        )
 
         await program.rpc.createTodoBoard('Board name', {
             accounts: {
-                holder: holder.publicKey,
-                todoBoard: todoBoardKey,
-                todoBoardType: todoBoardTypeKey,
-                authority: todoBoardAuthority.publicKey,
+                todoBoard: todoBoardAccount.publicKey,
+                authority: user.publicKey,
                 rent: anchor.web3.SYSVAR_RENT_PUBKEY,
                 systemProgram: anchor.web3.SystemProgram.programId
             },
-            signers: [holder, todoBoardAuthority],
+            signers: [user, todoBoardAccount],
             instructions: [
-                await program.account.holder.createInstruction(holder, 300)
+                await program.account.todoBoard.createInstruction(
+                    todoBoardAccount,
+                    300
+                )
             ]
         })
-
-        const account = await program.account.todoBoard.associated(
-            todoBoardAuthority.publicKey,
-            todoBoardTypeKey
-        )
-
-        console.log(account)
     })
 })
