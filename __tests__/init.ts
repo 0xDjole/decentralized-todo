@@ -26,7 +26,7 @@ describe('todoBoard', () => {
             todoBoardTypeKey
         )
 
-        await program.rpc.createTodoBoard(new anchor.BN(50), {
+        await program.rpc.createTodoBoard('Board name', {
             accounts: {
                 holder: holder.publicKey,
                 todoBoard: todoBoardKey,
@@ -37,7 +37,7 @@ describe('todoBoard', () => {
             },
             signers: [holder, todoBoardAuthority],
             instructions: [
-                await program.account.holder.createInstruction(holder)
+                await program.account.holder.createInstruction(holder, 300)
             ]
         })
 
