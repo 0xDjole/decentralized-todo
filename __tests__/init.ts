@@ -1,6 +1,6 @@
 import * as anchor from '@project-serum/anchor'
+const { PublicKey } = anchor.web3
 import assert from 'assert'
-
 describe('todoBoard', () => {
     const provider = anchor.Provider.env()
     // Configure the client to use the local cluster.
@@ -40,33 +40,23 @@ describe('todoBoard', () => {
             todoBoardAccount.publicKey
         )
 
-        const todoKey = await program.account.todo.associatedAddress(
-            user.publicKey,
-            todoBoardAccount.publicKey
+        const authority = program.provider.wallet.publicKey
+        const [todoKey, bump] = await PublicKey.findProgramAddress(
+            [authority.toBuffer()],
+            program.programId
         )
 
-        const todoName = 'Todo name'
-        await program.rpc.createTodo(todoName, {
+        const todoNameInput = 'My todo'
+        await program.rpc.createTodo(todoNameInput, bump, {
             accounts: {
                 todo: todoKey,
-                todoBoard: todoBoardAccount.publicKey,
-                authority: user.publicKey,
-                rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+                authority,
                 systemProgram: anchor.web3.SystemProgram.programId
-            },
-            signers: [user]
+            }
         })
-
-        const todo = await program.account.todo.associated(
-            user.publicKey,
-            todoBoardAccount.publicKey
-        )
-
-        const parsedTodoName = new TextDecoder('utf-8')
-            .decode(new Uint8Array(todo.name).filter(element => element))
-            .trim()
-
+        const todo = await program.account.todo.fetch(todoKey)
+        assert.ok(todo.name === todoNameInput)
+        assert.ok(todo.authority.equals(authority))
         expect(todoBoardFetched.name).toBe(boardName)
-        expect(parsedTodoName).toBe(todoName)
     })
 })

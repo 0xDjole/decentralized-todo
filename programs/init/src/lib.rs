@@ -14,19 +14,12 @@ pub mod todo {
         Ok(())
     }
 
-    pub fn create_todo(ctx: Context<CreateTodo>, todo_name: Option<String>) -> ProgramResult {
+    pub fn create_todo(ctx: Context<CreateTodo>, name: String, bump: u8) -> ProgramResult {
         let todo = &mut ctx.accounts.todo;
-        let todo_board = &mut ctx.accounts.todo_board;
 
-        let given_todo_name = todo_name.unwrap();
-        let given_todo_name_bytes = given_todo_name.as_bytes();
-
-        let mut parsed_todo_name = [0u8; 30];
-
-        parsed_todo_name[..given_todo_name_bytes.len()].copy_from_slice(given_todo_name_bytes);
-
-        todo.authority = todo_board.authority;
-        todo.name = parsed_todo_name;
+        todo.name = name;
+        todo.authority = *ctx.accounts.authority.key;
+        todo.bump = bump;
         Ok(())
     }
 }
@@ -48,19 +41,24 @@ pub struct TodoBoard {
 }
 
 #[derive(Accounts)]
+#[instruction(name: String, bump: u8)]
 pub struct CreateTodo<'info> {
-    #[account(init, associated = authority, with = todo_board)]
-    pub todo: ProgramAccount<'info, Todo>,
-    pub todo_board: ProgramAccount<'info, TodoBoard>,
-    #[account(mut, signer)]
+    #[account(
+        init,
+        seeds = [authority.key.as_ref()],
+        bump = bump,
+        payer = authority,
+        space = 320,
+    )]
+    todo: ProgramAccount<'info, Todo>,
+    #[account(signer)]
     authority: AccountInfo<'info>,
-    rent: Sysvar<'info, Rent>,
     system_program: AccountInfo<'info>,
 }
 
-#[associated]
-#[derive(Default)]
+#[account]
 pub struct Todo {
-    name: [u8; 30],
+    name: String,
     authority: Pubkey,
+    bump: u8,
 }
