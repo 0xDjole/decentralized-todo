@@ -41,10 +41,11 @@ describe('todoBoard', () => {
         )
 
         const todoNumber = 1
+        const byteArray = new Uint8Array([0, 0, 0, 0, 0, 0, 0, todoNumber])
 
         const authority = program.provider.wallet.publicKey
         const [todoKey, bump] = await PublicKey.findProgramAddress(
-            [todoBoardAccount.publicKey.toBuffer()],
+            [todoBoardAccount.publicKey.toBuffer(), byteArray],
             program.programId
         )
 

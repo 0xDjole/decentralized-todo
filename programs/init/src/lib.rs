@@ -51,7 +51,7 @@ pub struct TodoBoard {
 pub struct CreateTodo<'info> {
     #[account(
         init,
-        seeds = [todo_board.to_account_info().key.as_ref()],
+        seeds = [todo_board.to_account_info().key.as_ref(), &number.to_be_bytes()],
         bump = bump,
         payer = authority,
         space = 320,
