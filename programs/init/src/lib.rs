@@ -14,10 +14,16 @@ pub mod todo {
         Ok(())
     }
 
-    pub fn create_todo(ctx: Context<CreateTodo>, name: String, bump: u8) -> ProgramResult {
+    pub fn create_todo(
+        ctx: Context<CreateTodo>,
+        name: String,
+        number: u64,
+        bump: u8,
+    ) -> ProgramResult {
         let todo = &mut ctx.accounts.todo;
 
         todo.name = name;
+        todo.number = number;
         todo.authority = *ctx.accounts.todo_board.to_account_info().key;
         todo.bump = bump;
         Ok(())
@@ -41,11 +47,11 @@ pub struct TodoBoard {
 }
 
 #[derive(Accounts)]
-#[instruction(name: String, bump: u8)]
+#[instruction(name: String, number: u64, bump: u8)]
 pub struct CreateTodo<'info> {
     #[account(
         init,
-        seeds = [authority.key.as_ref()],
+        seeds = [todo_board.to_account_info().key.as_ref()],
         bump = bump,
         payer = authority,
         space = 320,
@@ -60,6 +66,7 @@ pub struct CreateTodo<'info> {
 #[account]
 pub struct Todo {
     name: String,
+    number: u64,
     authority: Pubkey,
     bump: u8,
 }

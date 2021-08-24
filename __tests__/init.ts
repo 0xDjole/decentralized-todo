@@ -40,21 +40,28 @@ describe('todoBoard', () => {
             todoBoardAccount.publicKey
         )
 
+        const todoNumber = 1
+
         const authority = program.provider.wallet.publicKey
         const [todoKey, bump] = await PublicKey.findProgramAddress(
-            [authority.toBuffer()],
+            [todoBoardAccount.publicKey.toBuffer()],
             program.programId
         )
 
         const todoNameInput = 'My todo'
-        await program.rpc.createTodo(todoNameInput, bump, {
-            accounts: {
-                todo: todoKey,
-                todoBoard: todoBoardAccount.publicKey,
-                authority,
-                systemProgram: anchor.web3.SystemProgram.programId
+        await program.rpc.createTodo(
+            todoNameInput,
+            new anchor.BN(todoNumber),
+            bump,
+            {
+                accounts: {
+                    todo: todoKey,
+                    todoBoard: todoBoardAccount.publicKey,
+                    authority,
+                    systemProgram: anchor.web3.SystemProgram.programId
+                }
             }
-        })
+        )
         const todo = await program.account.todo.fetch(todoKey)
         expect(todo.name).toEqual(todoNameInput)
         expect(todo.authority).toEqual(todoBoardAccount.publicKey)
