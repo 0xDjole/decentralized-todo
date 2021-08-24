@@ -1,6 +1,6 @@
 import * as anchor from '@project-serum/anchor'
 const { PublicKey } = anchor.web3
-import assert from 'assert'
+
 describe('todoBoard', () => {
     const provider = anchor.Provider.env()
     // Configure the client to use the local cluster.
@@ -56,8 +56,8 @@ describe('todoBoard', () => {
             }
         })
         const todo = await program.account.todo.fetch(todoKey)
-        assert.ok(todo.name === todoNameInput)
-        assert.ok(todo.authority.equals(todoBoardAccount.publicKey))
+        expect(todo.name).toEqual(todoNameInput)
+        expect(todo.authority).toEqual(todoBoardAccount.publicKey)
         expect(todoBoardFetched.name).toBe(boardName)
     })
 })
