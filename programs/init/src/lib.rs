@@ -18,7 +18,7 @@ pub mod todo {
         let todo = &mut ctx.accounts.todo;
 
         todo.name = name;
-        todo.authority = *ctx.accounts.authority.key;
+        todo.authority = *ctx.accounts.todo_board.to_account_info().key;
         todo.bump = bump;
         Ok(())
     }
@@ -51,6 +51,7 @@ pub struct CreateTodo<'info> {
         space = 320,
     )]
     todo: ProgramAccount<'info, Todo>,
+    todo_board: ProgramAccount<'info, TodoBoard>,
     #[account(signer)]
     authority: AccountInfo<'info>,
     system_program: AccountInfo<'info>,

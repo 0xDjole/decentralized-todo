@@ -50,13 +50,14 @@ describe('todoBoard', () => {
         await program.rpc.createTodo(todoNameInput, bump, {
             accounts: {
                 todo: todoKey,
+                todoBoard: todoBoardAccount.publicKey,
                 authority,
                 systemProgram: anchor.web3.SystemProgram.programId
             }
         })
         const todo = await program.account.todo.fetch(todoKey)
         assert.ok(todo.name === todoNameInput)
-        assert.ok(todo.authority.equals(authority))
+        assert.ok(todo.authority.equals(todoBoardAccount.publicKey))
         expect(todoBoardFetched.name).toBe(boardName)
     })
 })
