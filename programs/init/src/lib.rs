@@ -28,6 +28,18 @@ pub mod todo {
         todo.bump = bump;
         Ok(())
     }
+
+    pub fn update_todo(
+        ctx: Context<UpdateTodo>,
+        name: String,
+        _number: u64,
+        _bump: u8,
+    ) -> ProgramResult {
+        let todo = &mut ctx.accounts.todo;
+        todo.name = name;
+
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -58,7 +70,23 @@ pub struct CreateTodo<'info> {
     )]
     todo: ProgramAccount<'info, Todo>,
     todo_board: ProgramAccount<'info, TodoBoard>,
-    #[account(signer)]
+    #[account(mut, signer)]
+    authority: AccountInfo<'info>,
+    system_program: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+#[instruction(name: String, number: u64, bump: u8)]
+pub struct UpdateTodo<'info> {
+    #[account(
+        mut,
+        seeds = [todo_board.to_account_info().key.as_ref(), &number.to_be_bytes()],
+        bump = bump,
+    )]
+    todo: ProgramAccount<'info, Todo>,
+    #[account(has_one = authority)]
+    todo_board: ProgramAccount<'info, TodoBoard>,
+    #[account(mut, signer)]
     authority: AccountInfo<'info>,
     system_program: AccountInfo<'info>,
 }
